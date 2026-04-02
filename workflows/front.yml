@@ -1,0 +1,40 @@
+name: Front — CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'front/**'
+  pull_request:
+    paths:
+      - 'front/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Install
+        working-directory: front
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: front
+        run: npx tsc --noEmit
+
+      - name: Lint
+        working-directory: front
+        run: npm run lint
+
+      - name: Build
+        working-directory: front
+        run: npm run build
+        env:
+          VITE_BFF_URL: ${{ secrets.VITE_BFF_URL }}
